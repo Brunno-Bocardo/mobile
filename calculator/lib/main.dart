@@ -35,27 +35,92 @@ class MyHomePage extends StatefulWidget {
 }
 
 
-
 class _MyHomePageState extends State<MyHomePage> {
 
-  List visor = [];
+    List visor = [];
 
-  void addToVisor(String value) {
-    setState(() {
-      visor.add(value);
-    });
-  }
+    void addToVisor(String value) {
+        setState(() {
+            List<String> operacoes = ['+', '-', '*', '/'];
 
-  void clearVisor() {
-    setState(() {
-      visor.clear();
-    });
+            // Lidar com o decimal (.)
+            if (value == '.') {
+                if (visor.isNotEmpty) {
+                    if (visor.last == '.') {
+                        return; // Não adiciona dois decimais seguidos
+                    }
+                    // Não adiciona dois decimais em um número
+                    for (int i=visor.length-1; i>=0; i--) {
+                        if (visor[i] == '.') {
+                            return;
+                        }
+                        if (operacoes.contains(visor[i])) {
+                            break;
+                        }
+                    }
+                }
+
+                // Adiciona um zero antes do decimal
+                // - se . for o primeiro digitado no início ou após de uma operação
+                if (visor.isEmpty) {
+                    visor.add('0'); 
+                }
+                if (visor.isNotEmpty && operacoes.contains(visor.last)) {
+                    visor.add('0');
+                }
+            }
+
+            // Não adiciona nada além de números no início
+            if (visor.isEmpty && operacoes.contains(value)) {
+                return;
+            }
+
+            // Não adiciona um caractere especial seguido de outro
+            if (visor.isNotEmpty && operacoes.contains(visor.last) && operacoes.contains(value)) {
+                return;
+            }
+
+            visor.add(value);
+        });
+    }
+
+    void clearVisor() {
+        setState(() {
+            visor.clear();
+        });
   }
 
   void calculate(List visor) {
-    setState(() {
-      visor.clear();
-    });
+        setState(() {
+            String expressao = visor.join(''); // Transforma a lista em uma string única
+            List<String> operacoes = expressao.split(RegExp(r'[^+\-*\/]')).where((element) => element.isNotEmpty).toList();
+            List<String> numeros = expressao.split(RegExp(r'[+\-*\/]')).where((element) => element.isNotEmpty).toList();
+
+            double result = double.parse(numeros[0]);
+            for (int i=0; i<operacoes.length; i++) {
+                String operador = operacoes[i];
+                double numero = double.parse(numeros[i + 1]);
+                if (operador == '+') {
+                    result += numero;
+                } else if (operador == '-') {
+                    result -= numero;
+                } else if (operador == '*') {
+                    result *= numero;
+                } else if (operador == '/') {
+                    result /= numero;
+                }
+            }
+
+            visor.clear();
+
+            // Remove o decimal se for inteiro
+            if (result % 1 == 0) {
+                int resultInt = result.toInt();
+                visor.add(resultInt.toString()); return;
+            }
+            
+            visor.add(result.toString());
+        });
   }
 
   @override
@@ -208,6 +273,17 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             TextButton(
+              onPressed: () => addToVisor('.'),
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                padding: const EdgeInsets.all(16.0),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              child: const Text('.'),
+            ),
+
+            TextButton(
               onPressed: () => addToVisor('+'),
               style: TextButton.styleFrom(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -216,6 +292,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 textStyle: const TextStyle(fontSize: 20),
               ),
               child: const Text('+'),
+            ),
+
+            TextButton(
+              onPressed: () => addToVisor('*'),
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                padding: const EdgeInsets.all(16.0),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              child: const Text('x'),
             ),
 
             TextButton(
