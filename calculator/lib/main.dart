@@ -88,13 +88,25 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
             visor.clear();
         });
-  }
+    }
+
+    void clearLast(List visor) {
+        setState(() {
+            if (visor.isNotEmpty) {
+                visor.removeLast();
+            }
+        });
+    }
 
   void calculate(List visor) {
         setState(() {
             String expressao = visor.join(''); // Transforma a lista em uma string única
             List<String> operacoes = expressao.split(RegExp(r'[^+\-*\/]')).where((element) => element.isNotEmpty).toList();
             List<String> numeros = expressao.split(RegExp(r'[+\-*\/]')).where((element) => element.isNotEmpty).toList();
+
+            if (operacoes.length == numeros.length) {
+                return; // Formato inválido
+            }
 
             double result = double.parse(numeros[0]);
             for (int i=0; i<operacoes.length; i++) {
@@ -184,49 +196,49 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('1'),
             ),
 
-            TextButton(
-              onPressed: () => addToVisor('2'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('2'),
-            ),
+            // TextButton(
+            //   onPressed: () => addToVisor('2'),
+            //   style: TextButton.styleFrom(
+            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
+            //     padding: const EdgeInsets.all(16.0),
+            //     textStyle: const TextStyle(fontSize: 20),
+            //   ),
+            //   child: const Text('2'),
+            // ),
 
-            TextButton(
-              onPressed: () => addToVisor('3'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('3'),
-            ),
+            // TextButton(
+            //   onPressed: () => addToVisor('3'),
+            //   style: TextButton.styleFrom(
+            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
+            //     padding: const EdgeInsets.all(16.0),
+            //     textStyle: const TextStyle(fontSize: 20),
+            //   ),
+            //   child: const Text('3'),
+            // ),
 
-            TextButton(
-              onPressed: () => addToVisor('4'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('4'),
-            ),
+            // TextButton(
+            //   onPressed: () => addToVisor('4'),
+            //   style: TextButton.styleFrom(
+            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
+            //     padding: const EdgeInsets.all(16.0),
+            //     textStyle: const TextStyle(fontSize: 20),
+            //   ),
+            //   child: const Text('4'),
+            // ),
 
-            TextButton(
-              onPressed: () => addToVisor('5'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('5'),
-            ),
+            // TextButton(
+            //   onPressed: () => addToVisor('5'),
+            //   style: TextButton.styleFrom(
+            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
+            //     padding: const EdgeInsets.all(16.0),
+            //     textStyle: const TextStyle(fontSize: 20),
+            //   ),
+            //   child: const Text('5'),
+            // ),
 
             TextButton(
               onPressed: () => addToVisor('6'),
@@ -314,7 +326,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 textStyle: const TextStyle(fontSize: 20),
               ),
               child: const Text('='),
-            ),           
+            ),
+
+            TextButton(
+              onPressed: () => clearLast(visor),
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                padding: const EdgeInsets.all(16.0),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              child: const Text('<-'),
+            ),
           ],
         ),
       ),
