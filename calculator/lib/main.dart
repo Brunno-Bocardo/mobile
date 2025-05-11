@@ -118,6 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         if (operador == 'x') {
                             tempResultado = (double.parse(visor[j - 1]) * double.parse(visor[j + 1])).toString();
                         } else if (operador == '÷') {
+                            if (visor[j + 1] == '0') { return; }
                             tempResultado = (double.parse(visor[j - 1]) / double.parse(visor[j + 1])).toString();
                         }
                         visor[j+1] = tempResultado;
@@ -212,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     
                                     style: TextButton.styleFrom(
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-                                        backgroundColor: Color.fromARGB(255, 202, 163, 177),
+                                        backgroundColor: Color.fromARGB(255, 101, 145, 103),
                                         padding: const EdgeInsets.all(30.0),
                                         textStyle: const TextStyle(fontSize: 20),
                                         minimumSize: const Size(80, 60),
@@ -232,7 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     onPressed: () => clearLast(),
                                     style: TextButton.styleFrom(
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-                                        backgroundColor: Color.fromARGB(255, 202, 163, 177),
+                                        backgroundColor: Color.fromARGB(255, 101, 145, 103),
                                         padding: const EdgeInsets.all(30.0),
                                         textStyle: const TextStyle(fontSize: 20),
                                         minimumSize: const Size(80, 60),
