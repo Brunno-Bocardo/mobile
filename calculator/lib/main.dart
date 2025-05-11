@@ -103,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // cria a primeira leva de listas auxiliares
             var (expressao, operacoes, numeros, multDiv, somaSub) = _listasAuxiliares();
 
+            // TODO: encontrado bug quando o resultado é negativo - cai aqui
             if (operacoes.length == numeros.length) {
                 return; // Formato inválido
             }
