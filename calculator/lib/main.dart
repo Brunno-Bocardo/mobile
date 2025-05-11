@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     void addToVisor(String value) {
         setState(() {
-            List<String> operacoes = ['+', '-', '*', '/'];
+            List<String> operacoes = ['+', '-', 'x', '÷'];
 
             // Lidar com o decimal (.)
             if (value == '.') {
@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
     }
 
-    void clearLast(List visor) {
+    void clearLast() {
         setState(() {
             if (visor.isNotEmpty) {
                 visor.removeLast();
@@ -98,28 +98,47 @@ class _MyHomePageState extends State<MyHomePage> {
         });
     }
 
-  void calculate(List visor) {
+    void calculate() {
         setState(() {
-            String expressao = visor.join(''); // Transforma a lista em uma string única
-            List<String> operacoes = expressao.split(RegExp(r'[^+\-*\/]')).where((element) => element.isNotEmpty).toList();
-            List<String> numeros = expressao.split(RegExp(r'[+\-*\/]')).where((element) => element.isNotEmpty).toList();
+            // cria a primeira leva de listas auxiliares
+            var (expressao, operacoes, numeros, multDiv, somaSub) = _listasAuxiliares();
 
             if (operacoes.length == numeros.length) {
                 return; // Formato inválido
             }
 
+            
+            
+            for (int i=0; i<multDiv.length; i++) {
+                String operador = multDiv[i];
+                String tempResultado = '';
+                
+                for (int j=0; j<visor.length; j++) {
+                    if (operador == visor[j]) {
+                        if (operador == 'x') {
+                            tempResultado = (double.parse(visor[j - 1]) * double.parse(visor[j + 1])).toString();
+                        } else if (operador == '÷') {
+                            tempResultado = (double.parse(visor[j - 1]) / double.parse(visor[j + 1])).toString();
+                        }
+                        visor[j+1] = tempResultado;
+                        visor.removeAt(j - 1);
+                        visor.removeAt(j - 1);
+                    }
+                }
+            }
+
+            // atualiza as listas auxiliares após os cálculos de multiplicação e divisão
+            (expressao, operacoes, numeros, multDiv, somaSub) = _listasAuxiliares();
+
             double result = double.parse(numeros[0]);
-            for (int i=0; i<operacoes.length; i++) {
-                String operador = operacoes[i];
+            for (int i=0; i<somaSub.length; i++) {
+                String operador = somaSub[i];
                 double numero = double.parse(numeros[i + 1]);
+                
                 if (operador == '+') {
                     result += numero;
                 } else if (operador == '-') {
                     result -= numero;
-                } else if (operador == '*') {
-                    result *= numero;
-                } else if (operador == '/') {
-                    result /= numero;
                 }
             }
 
@@ -133,214 +152,246 @@ class _MyHomePageState extends State<MyHomePage> {
             
             visor.add(result.toString());
         });
-  }
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    
-    return Scaffold(
-      body: Center(
+    (String, List<String>, List<String>, List<String>, List<String>) _listasAuxiliares() {
+        String expressao = visor.join(''); // Transforma a lista em uma string única
+        List<String> operacoes = expressao.split(RegExp(r'[^+\-x÷]')).where((element) => element.isNotEmpty).toList();
+        List<String> numeros = expressao.split(RegExp(r'[+\-x÷]')).where((element) => element.isNotEmpty).toList();
+        List<String> multDiv = expressao.split(RegExp(r'[^x÷]')).where((element) => element.isNotEmpty).toList();
+        List<String> somaSub = expressao.split(RegExp(r'[^+\-]')).where((element) => element.isNotEmpty).toList();
+        return (expressao, operacoes, numeros, multDiv, somaSub);
+    }
 
-        child: Column(
-          
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // const Text('You have pushed the button this many times:'),
-            Container(
-              width: 300,
-              height: 50,
-              color: Colors.blue,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  visor.join(''),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+    @override
+    Widget build(BuildContext context) {
+        
+        return Scaffold(
+            body: Center(
+
+                child: Column(
+                
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                        // const Text('You have pushed the button this many times:'),
+                        Container(
+                            width: 300,
+                            height: 50,
+                            color: Colors.blue,
+                            child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                    visor.join(''),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                    ),
+                                ),
+                            ),
+                        ),
+
+                        TextButton(
+                            onPressed: () => clearVisor(),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('C'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('0'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('0'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('1'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('1'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('2'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('2'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('3'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('3'),
+                        ),
+
+                        // TextButton(
+                        //     onPressed: () => addToVisor('4'),
+                        //     style: TextButton.styleFrom(
+                        //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        //         backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                        //         padding: const EdgeInsets.all(16.0),
+                        //         textStyle: const TextStyle(fontSize: 20),
+                        //     ),
+                        //     child: const Text('4'),
+                        // ),
+
+                        // TextButton(
+                        //     onPressed: () => addToVisor('5'),
+                        //     style: TextButton.styleFrom(
+                        //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        //         backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                        //         padding: const EdgeInsets.all(16.0),
+                        //         textStyle: const TextStyle(fontSize: 20),
+                        //     ),
+                        //     child: const Text('5'),
+                        // ),
+
+                        // TextButton(
+                        //     onPressed: () => addToVisor('6'),
+                        //     style: TextButton.styleFrom(
+                        //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        //         backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                        //         padding: const EdgeInsets.all(16.0),
+                        //         textStyle: const TextStyle(fontSize: 20),
+                        //     ),
+                        //     child: const Text('6'),
+                        // ),
+
+                        // TextButton(
+                        //     onPressed: () => addToVisor('7'),
+                        //     style: TextButton.styleFrom(
+                        //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        //         backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                        //         padding: const EdgeInsets.all(16.0),
+                        //         textStyle: const TextStyle(fontSize: 20),
+                        //     ),
+                        //     child: const Text('7'),
+                        // ),
+
+                        // TextButton(
+                        //     onPressed: () => addToVisor('8'),
+                        //     style: TextButton.styleFrom(
+                        //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        //         backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                        //         padding: const EdgeInsets.all(16.0),
+                        //         textStyle: const TextStyle(fontSize: 20),
+                        //     ),
+                        //     child: const Text('8'),
+                        // ),
+
+                        // TextButton(
+                        //     onPressed: () => addToVisor('9'),
+                        //     style: TextButton.styleFrom(
+                        //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        //         backgroundColor: Color.fromARGB(255, 231, 226, 226),
+                        //         padding: const EdgeInsets.all(16.0),
+                        //         textStyle: const TextStyle(fontSize: 20),
+                        //     ),
+                        //     child: const Text('9'),
+                        // ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('.'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('.'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('+'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('+'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('-'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('-'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('x'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('x'),
+                        ),
+
+                        TextButton(
+                            onPressed: () => addToVisor('÷'),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('÷'),
+                        ),
+
+
+                        TextButton(
+                            onPressed: () => calculate(),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('='),
+                        ),
+
+                        TextButton(
+                            onPressed: () => clearLast(),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: Color.fromARGB(255, 235, 174, 174),
+                                padding: const EdgeInsets.all(16.0),
+                                textStyle: const TextStyle(fontSize: 20),
+                            ),
+                            child: const Text('<-'),
+                        ),
+                    ],
                 ),
-              ),
             ),
-
-            TextButton(
-              onPressed: () => clearVisor(),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 235, 174, 174),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('C'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('0'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('0'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('1'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('1'),
-            ),
-
-            // TextButton(
-            //   onPressed: () => addToVisor('2'),
-            //   style: TextButton.styleFrom(
-            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
-            //     padding: const EdgeInsets.all(16.0),
-            //     textStyle: const TextStyle(fontSize: 20),
-            //   ),
-            //   child: const Text('2'),
-            // ),
-
-            // TextButton(
-            //   onPressed: () => addToVisor('3'),
-            //   style: TextButton.styleFrom(
-            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
-            //     padding: const EdgeInsets.all(16.0),
-            //     textStyle: const TextStyle(fontSize: 20),
-            //   ),
-            //   child: const Text('3'),
-            // ),
-
-            // TextButton(
-            //   onPressed: () => addToVisor('4'),
-            //   style: TextButton.styleFrom(
-            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
-            //     padding: const EdgeInsets.all(16.0),
-            //     textStyle: const TextStyle(fontSize: 20),
-            //   ),
-            //   child: const Text('4'),
-            // ),
-
-            // TextButton(
-            //   onPressed: () => addToVisor('5'),
-            //   style: TextButton.styleFrom(
-            //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            //     backgroundColor: Color.fromARGB(255, 231, 226, 226),
-            //     padding: const EdgeInsets.all(16.0),
-            //     textStyle: const TextStyle(fontSize: 20),
-            //   ),
-            //   child: const Text('5'),
-            // ),
-
-            TextButton(
-              onPressed: () => addToVisor('6'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('6'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('7'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('7'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('8'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('8'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('9'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 231, 226, 226),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('9'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('.'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 235, 174, 174),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('.'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('+'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 235, 174, 174),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('+'),
-            ),
-
-            TextButton(
-              onPressed: () => addToVisor('*'),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 235, 174, 174),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('x'),
-            ),
-
-            TextButton(
-              onPressed: () => calculate(visor),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 235, 174, 174),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('='),
-            ),
-
-            TextButton(
-              onPressed: () => clearLast(visor),
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Color.fromARGB(255, 235, 174, 174),
-                padding: const EdgeInsets.all(16.0),
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              child: const Text('<-'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+        );
+    }
 }
