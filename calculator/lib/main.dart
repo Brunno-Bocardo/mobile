@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // Lidar com o decimal (.)
             if (value == '.') {
                 if (visor.isNotEmpty) {
-                    if (visor.last == '.') {
+                    if (visor.last == '.' || visor.last.contains('.')) {
                         return; // Não adiciona dois decimais seguidos
                     }
                     // Não adiciona dois decimais em um número
