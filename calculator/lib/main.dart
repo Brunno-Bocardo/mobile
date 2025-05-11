@@ -107,23 +107,54 @@ class _MyHomePageState extends State<MyHomePage> {
                 return; // Formato inválido
             }
 
-            
-            // primeiro, faz os cálculos de multiplicação e divisão
-            for (int i=0; i<multDiv.length; i++) {
-                String operador = multDiv[i];
-                String tempResultado = '';
-                
-                for (int j=0; j<visor.length; j++) {
-                    if (operador == visor[j]) {
-                        if (operador == 'x') {
-                            tempResultado = (double.parse(visor[j - 1]) * double.parse(visor[j + 1])).toString();
-                        } else if (operador == '÷') {
-                            if (visor[j + 1] == '0') { return; }
-                            tempResultado = (double.parse(visor[j - 1]) / double.parse(visor[j + 1])).toString();
+            if (operacoes.isNotEmpty) {
+                // primeiro, faz os cálculos de multiplicação e divisão
+                for (int i=0; i<multDiv.length; i++) {
+                    String operador = multDiv[i];
+                    String tempResultado = '';
+                    int qtdUsada = 0;
+                    
+                    for (int j=0; j<visor.length; j++) {
+                        
+                        if (operador == visor[j]) {
+
+                            String numAnterior = '';
+                            int cont = j - 1;
+                            while (cont >= 0) {
+                                if (operacoes.contains(visor[cont])) {
+                                    break;
+                                }
+                                numAnterior = visor[cont] + numAnterior;
+                                qtdUsada++;
+                                cont--;
+                            }
+
+                            String numPosterior = '';
+                            cont = j + 1;
+                            while (cont < visor.length) {
+                                if (operacoes.contains(visor[cont])) {
+                                    break;
+                                }
+                                numPosterior = numPosterior + visor[cont];
+                                qtdUsada++;
+                                cont++;
+                            }
+
+
+                            if (operador == 'x') {
+                                tempResultado = (double.parse(numAnterior) * double.parse(numPosterior)).toString();
+                            } else if (operador == '÷') {
+                                if (visor[j + 1] == '0') { return; }
+                                tempResultado = (double.parse(numAnterior) / double.parse(numPosterior)).toString();
+                            }
+                            int fimDaExpressao = j + (qtdUsada/2).toInt();
+                            visor[fimDaExpressao] = tempResultado;
+                            while (qtdUsada > 0) {
+                                visor.removeAt(fimDaExpressao - 1);
+                                qtdUsada--;
+                                fimDaExpressao--;
+                            }
                         }
-                        visor[j+1] = tempResultado;
-                        visor.removeAt(j - 1);
-                        visor.removeAt(j - 1);
                     }
                 }
             }
@@ -131,27 +162,27 @@ class _MyHomePageState extends State<MyHomePage> {
             // atualiza as listas auxiliares após os cálculos de multiplicação e divisão
             (expressao, operacoes, numeros, multDiv, somaSub) = _listasAuxiliares();
 
-            // segundo, faz os cálculos de soma e subtração
             double result = double.parse(numeros[0]);
-            for (int i=0; i<somaSub.length; i++) {
-                String operador = somaSub[i];
-                double numero = double.parse(numeros[i + 1]);
-                
-                if (operador == '+') {
-                    result += numero;
-                } else if (operador == '-') {
-                    result -= numero;
+            if (operacoes.isNotEmpty) {
+                // segundo, faz os cálculos de soma e subtração
+                for (int i=0; i<somaSub.length; i++) {
+                    String operador = somaSub[i];
+                    double numero = double.parse(numeros[i + 1]);
+                    
+                    if (operador == '+') {
+                        result += numero;
+                    } else if (operador == '-') {
+                        result -= numero;
+                    }
                 }
             }
 
             visor.clear();
-
             // Remove o decimal se for inteiro
             if (result % 1 == 0) {
                 int resultInt = result.toInt();
                 visor.add(resultInt.toString()); return;
             }
-            
             visor.add(result.toString());
         });
     }
