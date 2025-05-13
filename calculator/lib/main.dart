@@ -118,7 +118,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     for (int j=0; j<visor.length; j++) {
                         
                         if (operador == visor[j]) {
-
+                            
+                            // lógica para formar o número anterior e posterior do operador - caso dos decimais
                             String numAnterior = '';
                             int cont = j - 1;
                             while (cont >= 0) {
