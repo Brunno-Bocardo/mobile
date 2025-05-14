@@ -100,23 +100,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
     void calculate() {
         setState(() {
+            if (visor.isEmpty) {
+                return;
+            }
+
+            bool inicioNegativo = false;
             // cria a primeira leva de listas auxiliares
             var (expressao, operacoes, numeros, multDiv, somaSub) = _listasAuxiliares();
 
-            // TODO: encontrado bug quando o resultado é negativo - cai aqui
-            if (operacoes.length == numeros.length) {
+            if (operacoes.contains(visor.last)) {
                 return; // Formato inválido
+            }
+
+            if (operacoes[0] == '-' && visor[0] == '-' && somaSub[0] == '-') {
+                inicioNegativo = true;
+                operacoes.removeAt(0);
+                visor.removeAt(0);
+                somaSub.removeAt(0);
             }
 
             if (operacoes.isNotEmpty) {
                 // primeiro, faz os cálculos de multiplicação e divisão
                 for (int i=0; i<multDiv.length; i++) {
                     String operador = multDiv[i];
-                    String tempResultado = '';
+                    double tempResultado = 0;
                     int qtdUsada = 0;
                     
                     for (int j=0; j<visor.length; j++) {
-                        
+                        // encontra o operador em relação a toda a expressão
                         if (operador == visor[j]) {
                             
                             // lógica para formar o número anterior e posterior do operador - caso dos decimais
@@ -144,15 +155,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
                             if (operador == 'x') {
-                                tempResultado = (double.parse(numAnterior) * double.parse(numPosterior)).toString();
+                                tempResultado = (double.parse(numAnterior) * double.parse(numPosterior));
                             } else if (operador == '÷') {
                                 if (visor[j + 1] == '0') { return; }
-                                tempResultado = (double.parse(numAnterior) / double.parse(numPosterior)).toString();
+                                tempResultado = (double.parse(numAnterior) / double.parse(numPosterior));
                             }
-                            int fimDaExpressao = j + (qtdUsada/2).toInt();
-                            visor[fimDaExpressao] = tempResultado;
+
+                            // no caso de multiplicação e divisão, basta inverter o sinal do resultado da operação
+                            if (inicioNegativo && operador == operacoes[0]) {
+                                inicioNegativo = false;
+                                tempResultado = tempResultado * (-1);
+                            }
+
+                            int fimDaExpressao = j + 1;
+                            while (fimDaExpressao < visor.length && !operacoes.contains(visor[fimDaExpressao])) {
+                                fimDaExpressao++;
+                            }
+                            visor[fimDaExpressao-1] = tempResultado.toString();
+
+                            // remove os números/operação que foram usados na operação, e adiciona o resultado ao fim do segmento da expressão
+                            if (visor.length + 1 > fimDaExpressao) {
+                                fimDaExpressao--;
+                            }
+                            visor[fimDaExpressao] = tempResultado.toString();
                             while (qtdUsada > 0) {
-                                visor.removeAt(fimDaExpressao - 1);
+                                if (fimDaExpressao > 0) {
+                                    visor.removeAt(fimDaExpressao - 1);
+                                }
                                 qtdUsada--;
                                 fimDaExpressao--;
                             }
@@ -163,13 +192,28 @@ class _MyHomePageState extends State<MyHomePage> {
 
             // atualiza as listas auxiliares após os cálculos de multiplicação e divisão
             (expressao, operacoes, numeros, multDiv, somaSub) = _listasAuxiliares();
-
             double result = double.parse(numeros[0]);
-            if (operacoes.isNotEmpty) {
+            
+            if (operacoes.length == numeros.length && numeros.length != 1) {
+                operacoes.removeAt(0);
+                somaSub.removeAt(0);
+                inicioNegativo = true;
+            } else if (operacoes.length == numeros.length && numeros.length == 1) {
+                result = result * (-1);
+                somaSub.removeAt(0);
+            }
+            
+            if (operacoes.isNotEmpty && somaSub.isNotEmpty) {
                 // segundo, faz os cálculos de soma e subtração
                 for (int i=0; i<somaSub.length; i++) {
                     String operador = somaSub[i];
                     double numero = double.parse(numeros[i + 1]);
+
+                    // no caso de soma e subtração, basta inverter o sinal do número à esquerda do operador (que tinha originalmente o sinal negativo)
+                    if (inicioNegativo && operador == operacoes[0]) {
+                        inicioNegativo = false;
+                        result = result * (-1);
+                    }
                     
                     if (operador == '+') {
                         result += numero;
@@ -179,14 +223,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
             }
 
-            visor.clear();
-            // Remove o decimal se for inteiro
-            if (result % 1 == 0) {
-                int resultInt = result.toInt();
-                visor.add(resultInt.toString()); return;
-            }
-            visor.add(result.toString());
+             _exibirResultado(result);
         });
+    }
+
+    void _exibirResultado(double result) {
+        visor.clear();
+
+        if (result.isNegative) {
+            String finalResult = (result % 1 == 0) ? result.abs().toInt().toString() : result.abs().toString();
+            visor.add('-'); 
+            visor.add(finalResult); return;
+        }
+        else if (result % 1 == 0) {
+            visor.add(result.toInt().toString()); return;
+        }
+        visor.add(result.toString());
     }
 
     (String, List<String>, List<String>, List<String>, List<String>) _listasAuxiliares() {
