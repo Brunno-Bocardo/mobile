@@ -140,6 +140,14 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
           const Text('Você está logado!'),
           const SizedBox(height: 20),
           Text('Ficamos felizes em ver você, ${widget.nomeUsuario}'),
+          const SizedBox(height: 20),
+          Text('Aproveite esse GIF de gatinho'),
+          SizedBox(height: 20),
+          Image.network(
+            'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnpkZHB0d3c3aWZnc3Q1ZW90czlzcXozcm05ZmdjMWt4bmU1ZWR6NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lJNoBCvQYp7nq/giphy.gif',
+            width: 200,
+            height: 200,
+          ),
         ],
       ),
     );
